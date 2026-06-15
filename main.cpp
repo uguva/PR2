@@ -32,13 +32,12 @@ void printMenu() {
 }
 
 int main() {
-    // === Настройка русского языка для консоли ===
     setlocale(LC_ALL, "ru_RU.UTF-8");
 #ifdef _WIN32
-    SetConsoleCP(1251);        // Ввод на русском
-    SetConsoleOutputCP(1251);  // Вывод на русском
+    SetConsoleCP(1251);
+    SetConsoleOutputCP(1251);
 #endif
-    // ============================================
+
 
     int choice;
     while (true) {
@@ -85,7 +84,6 @@ int main() {
                 break;
 }
 
-// ... остальной код ...
             case MenuOption::TASK_4_RSA_AND_MITM: {
                 int action;
                 std::cout << "1 - Шифрование, 2 - Дешифрование, 3 - Эмуляция атаки MitM: ";
