@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <fstream>
 #include <clocale>
@@ -94,15 +95,24 @@ case MenuOption::RSA_AND_MITM: {
                     if (keySource == 1) {
                         int64_t p, q;
                         do {
-                            p = getValidNumber<int64_t>("Введите простое число p: ");
-                            if (!isPrime(p)) std::cout << "Ошибка: число должно быть простым!\n";
-                        } while (!isPrime(p));
+                            do {
+                                p = getValidNumber<int64_t>("Введите простое число p: ");
+                                if (!isPrime(p)) std::cout << "Ошибка: число должно быть простым!\n";
+                            } while (!isPrime(p));
 
-                        do {
-                            q = getValidNumber<int64_t>("Введите простое число q: ");
-                            if (!isPrime(q)) std::cout << "Ошибка: число должно быть простым!\n";
-                            else if (p == q) std::cout << "Рекомендация: p и q не должны быть равны.\n";
-                        } while (!isPrime(q));
+                            do {
+                                q = getValidNumber<int64_t>("Введите простое число q: ");
+                                if (!isPrime(q)) std::cout << "Ошибка: число должно быть простым!\n";
+                                else if (p == q) std::cout << "Рекомендация: p и q не должны быть равны.\n";
+                            } while (!isPrime(q));
+                            
+                            // Защита от Причины №1
+                            if (p * q <= 255) {
+                                std::cout << "\n--> ОШИБКА RSA: Ваш модуль n = " << p * q << " слишком мал!\n";
+                                std::cout << "--> Для шифрования кириллицы (байты до 255), модуль n должен быть строго > 255.\n";
+                                std::cout << "--> Пожалуйста, введите числа больше (например, 17 и 19).\n\n";
+                            }
+                        } while (p * q <= 255);
 
                         RSAKeyPair keys = generateRSAKeys(p, q);
                         pubKeyToUse = keys.publicKey;
@@ -127,8 +137,10 @@ case MenuOption::RSA_AND_MITM: {
                                     sourceFile = getValidString("Введите имя существующего текстового файла: ");
                                     std::ifstream in(sourceFile);
                                     if (in) {
-                                        std::getline(in, textToEncrypt);
-                                        std::cout << "Текст из файла: " << textToEncrypt << "\n";
+                                        std::stringstream buffer;
+                                        buffer << in.rdbuf(); // Читаем файл целиком, со всеми переносами строк
+                                        textToEncrypt = buffer.str();
+                                        std::cout << "Текст успешно загружен из файла!\n";
                                         break;
                                     } else {
                                         std::cout << "Ошибка: Файл не найден! Попробуйте снова.\n"; 
