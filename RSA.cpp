@@ -36,27 +36,27 @@ std::string rsaDecryptString(const std::vector<int64_t>& cipher, const RSAKey& p
 }
 
 void rsaEncryptToFile(const std::string& text, const std::string& outputFile, const RSAKey& pubKey) {
-    std::ofstream out(outputFile);
+    std::ofstream out(outputFile, std::ios::binary);
     if (!out) {
         std::cerr << "Ошибка создания файла!\n";
         return;
     }
     std::vector<int64_t> cipher = rsaEncryptString(text, pubKey);
     for (int64_t c : cipher) {
-        out << c << " ";
+        out.write(reinterpret_cast<const char*>(&c), sizeof(c));
     }
     std::cout << "Данные успешно зашифрованы и сохранены в файл: " << outputFile << "\n";
 }
 
 std::vector<int64_t> readCipherFromFile(const std::string& inputFile) {
-    std::ifstream in(inputFile);
+    std::ifstream in(inputFile, std::ios::binary);
     std::vector<int64_t> cipher;
-    int64_t val;
     if (!in) {
         std::cerr << "Ошибка чтения файла!\n";
         return cipher;
     }
-    while (in >> val) {
+    int64_t val;
+    while (in.read(reinterpret_cast<char*>(&val), sizeof(val))) {
         cipher.push_back(val);
     }
     return cipher;
