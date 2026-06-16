@@ -85,150 +85,150 @@ int main() {
                 break;
             }
 
-case MenuOption::RSA_AND_MITM: {
-                int action = getValidChoice("1 - Шифрование, 2 - Дешифрование, 3 - Эмуляция атаки MitM: ", 1, 3);
-                
-                if (action == 1) { 
-                    int keySource = getValidChoice("1 - Создать новые ключи, 2 - Использовать Открытый ключ собеседника: ", 1, 2);
-                    RSAKey pubKeyToUse;
-
-                    if (keySource == 1) {
-                        int64_t p, q;
-                        do {
-                            do {
-                                p = getValidNumber<int64_t>("Введите простое число p: ");
-                                if (!isPrime(p)) std::cout << "Ошибка: число должно быть простым!\n";
-                            } while (!isPrime(p));
-
-                            do {
-                                q = getValidNumber<int64_t>("Введите простое число q: ");
-                                if (!isPrime(q)) std::cout << "Ошибка: число должно быть простым!\n";
-                                else if (p == q) std::cout << "Рекомендация: p и q не должны быть равны.\n";
-                            } while (!isPrime(q));
+            case MenuOption::RSA_AND_MITM: {
+                            int action = getValidChoice("1 - Шифрование, 2 - Дешифрование, 3 - Эмуляция атаки MitM: ", 1, 3);
                             
-                            // Защита от Причины №1
-                            if (p * q <= 255) {
-                                std::cout << "\n--> ОШИБКА RSA: Ваш модуль n = " << p * q << " слишком мал!\n";
-                                std::cout << "--> Для шифрования кириллицы (байты до 255), модуль n должен быть строго > 255.\n";
-                                std::cout << "--> Пожалуйста, введите числа больше (например, 17 и 19).\n\n";
+                            if (action == 1) { 
+                                int keySource = getValidChoice("1 - Создать новые ключи, 2 - Использовать Открытый ключ собеседника: ", 1, 2);
+                                RSAKey pubKeyToUse;
+            
+                                if (keySource == 1) {
+                                    int64_t p, q;
+                                    do {
+                                        do {
+                                            p = getValidNumber<int64_t>("Введите простое число p: ");
+                                            if (!isPrime(p)) std::cout << "Ошибка: число должно быть простым!\n";
+                                        } while (!isPrime(p));
+            
+                                        do {
+                                            q = getValidNumber<int64_t>("Введите простое число q: ");
+                                            if (!isPrime(q)) std::cout << "Ошибка: число должно быть простым!\n";
+                                            else if (p == q) std::cout << "Рекомендация: p и q не должны быть равны.\n";
+                                        } while (!isPrime(q));
+                                        
+                                        // Защита от Причины №1
+                                        if (p * q <= 255) {
+                                            std::cout << "\n--> ОШИБКА RSA: Ваш модуль n = " << p * q << " слишком мал!\n";
+                                            std::cout << "--> Для шифрования кириллицы (байты до 255), модуль n должен быть строго > 255.\n";
+                                            std::cout << "--> Пожалуйста, введите числа больше (например, 17 и 19).\n\n";
+                                        }
+                                    } while (p * q <= 255);
+            
+                                    RSAKeyPair keys = generateRSAKeys(p, q);
+                                    pubKeyToUse = keys.publicKey;
+            
+                                    int mode = getValidChoice("1 - Работа с консолью, 2 - Работа с файлом, 3 - Выход в меню: ", 1, 3);
+                                    if (mode == 3) {
+                                        std::cout << "Ключи успешно созданы. Возврат в главное меню.\n";
+                                        break;
+                                    }
+            
+                                    std::string textToEncrypt;
+                                    if (mode == 1) {
+                                        textToEncrypt = getValidString("Введите текст для шифрования: ");
+                                        std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
+                                        rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
+                                    } 
+                                    else if (mode == 2) {
+                                        int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
+                                        std::string sourceFile;
+                                        if (fileAction == 1) {
+                                            while (true) {
+                                                sourceFile = getValidString("Введите имя существующего текстового файла: ");
+                                                std::ifstream in(sourceFile);
+                                                if (in) {
+                                                    std::stringstream buffer;
+                                                    buffer << in.rdbuf(); // Читаем файл целиком, со всеми переносами строк
+                                                    textToEncrypt = buffer.str();
+                                                    std::cout << "Текст успешно загружен из файла!\n";
+                                                    break;
+                                                } else {
+                                                    std::cout << "Ошибка: Файл не найден! Попробуйте снова.\n"; 
+                                                }
+                                            }
+                                        } else {
+                                            sourceFile = getValidString("Введите имя нового текстового файла (с расширением): ");
+                                            std::ofstream out(sourceFile);
+                                            textToEncrypt = getValidString("Введите текст: ");
+                                            out << textToEncrypt;
+                                            out.close();
+                                        }
+                                        
+                                        std::string destFile = getValidString("Введите название файла для сохранения шифра (без расширения): ");
+                                        rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
+                                    }
+                                } 
+                                else if (keySource == 2) {
+                                    pubKeyToUse.part = getValidNumber<int64_t>("Введите открытый ключ собеседника (e): ");
+                                    pubKeyToUse.n = getValidNumber<int64_t>("Введите модуль собеседника (n): ");
+            
+                                    int mode = getValidChoice("1 - Работа с консолью, 2 - Работа с файлом: ", 1, 2);
+                                    std::string textToEncrypt;
+                                    if (mode == 1) {
+                                        textToEncrypt = getValidString("Введите текст для шифрования: ");
+                                        std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
+                                        rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
+                                    } 
+                                    else if (mode == 2) {
+                                        int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
+                                        std::string sourceFile;
+                                        if (fileAction == 1) {
+                                            while (true) {
+                                                sourceFile = getValidString("Введите имя существующего текстового файла: ");
+                                                std::ifstream in(sourceFile);
+                                                if (in) {
+                                                    std::getline(in, textToEncrypt);
+                                                    std::cout << "Текст из файла: " << textToEncrypt << "\n";
+                                                    break;
+                                                } else {
+                                                    std::cout << "Ошибка: Файл не найден! Попробуйте снова.\n"; 
+                                                }
+                                            }
+                                        } else {
+                                            sourceFile = getValidString("Введите имя нового текстового файла (с расширением): ");
+                                            std::ofstream out(sourceFile);
+                                            textToEncrypt = getValidString("Введите текст: ");
+                                            out << textToEncrypt;
+                                            out.close();
+                                        }
+                                        
+                                        std::string destFile = getValidString("Введите название файла для сохранения шифра (без расширения): ");
+                                        rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
+                                    }
+                                }
+                            } 
+                            else if (action == 2) { 
+                                int mode = getValidChoice("1 - Вывод в консоль, 2 - Вывод в отдельный файл: ", 1, 2);
+                                
+                                std::vector<int64_t> cipher;
+                                std::string encFile;
+                                while (true) {
+                                    encFile = getValidString("Введите имя зашифрованного файла (с расширением .bin): ");
+                                    cipher = readCipherFromFile(encFile);
+                                    if (!cipher.empty()) break;
+                                    std::cout << "Попробуйте ввести имя файла заново.\n";
+                                }
+                                
+                                int64_t d = getValidNumber<int64_t>("Введите ваш закрытый ключ (d): ");
+                                int64_t n = getValidNumber<int64_t>("Введите ваш модуль (n): ");
+                                RSAKey privKey = {d, n};
+                                
+                                std::string decryptedText = rsaDecryptString(cipher, privKey);
+                                
+                                if (mode == 1) {
+                                    std::cout << "\nРасшифрованный текст: " << decryptedText << "\n";
+                                } else {
+                                    std::string destFile = getValidString("Введите имя текстового файла для сохранения расшифрованного текста: ");
+                                    std::ofstream out(destFile);
+                                    out << decryptedText;
+                                    std::cout << "Текст успешно сохранен!\n";
+                                }
                             }
-                        } while (p * q <= 255);
-
-                        RSAKeyPair keys = generateRSAKeys(p, q);
-                        pubKeyToUse = keys.publicKey;
-
-                        int mode = getValidChoice("1 - Работа с консолью, 2 - Работа с файлом, 3 - Выход в меню: ", 1, 3);
-                        if (mode == 3) {
-                            std::cout << "Ключи успешно созданы. Возврат в главное меню.\n";
+                            else if (action == 3) {
+                                emulateRSAMitM();
+                            }
                             break;
                         }
-
-                        std::string textToEncrypt;
-                        if (mode == 1) {
-                            textToEncrypt = getValidString("Введите текст для шифрования: ");
-                            std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
-                        } 
-                        else if (mode == 2) {
-                            int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
-                            std::string sourceFile;
-                            if (fileAction == 1) {
-                                while (true) {
-                                    sourceFile = getValidString("Введите имя существующего текстового файла: ");
-                                    std::ifstream in(sourceFile);
-                                    if (in) {
-                                        std::stringstream buffer;
-                                        buffer << in.rdbuf(); // Читаем файл целиком, со всеми переносами строк
-                                        textToEncrypt = buffer.str();
-                                        std::cout << "Текст успешно загружен из файла!\n";
-                                        break;
-                                    } else {
-                                        std::cout << "Ошибка: Файл не найден! Попробуйте снова.\n"; 
-                                    }
-                                }
-                            } else {
-                                sourceFile = getValidString("Введите имя нового текстового файла (с расширением): ");
-                                std::ofstream out(sourceFile);
-                                textToEncrypt = getValidString("Введите текст: ");
-                                out << textToEncrypt;
-                                out.close();
-                            }
-                            
-                            std::string destFile = getValidString("Введите название файла для сохранения шифра (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
-                        }
-                    } 
-                    else if (keySource == 2) {
-                        pubKeyToUse.part = getValidNumber<int64_t>("Введите открытый ключ собеседника (e): ");
-                        pubKeyToUse.n = getValidNumber<int64_t>("Введите модуль собеседника (n): ");
-
-                        int mode = getValidChoice("1 - Работа с консолью, 2 - Работа с файлом: ", 1, 2);
-                        std::string textToEncrypt;
-                        if (mode == 1) {
-                            textToEncrypt = getValidString("Введите текст для шифрования: ");
-                            std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
-                        } 
-                        else if (mode == 2) {
-                            int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
-                            std::string sourceFile;
-                            if (fileAction == 1) {
-                                while (true) {
-                                    sourceFile = getValidString("Введите имя существующего текстового файла: ");
-                                    std::ifstream in(sourceFile);
-                                    if (in) {
-                                        std::getline(in, textToEncrypt);
-                                        std::cout << "Текст из файла: " << textToEncrypt << "\n";
-                                        break;
-                                    } else {
-                                        std::cout << "Ошибка: Файл не найден! Попробуйте снова.\n"; 
-                                    }
-                                }
-                            } else {
-                                sourceFile = getValidString("Введите имя нового текстового файла (с расширением): ");
-                                std::ofstream out(sourceFile);
-                                textToEncrypt = getValidString("Введите текст: ");
-                                out << textToEncrypt;
-                                out.close();
-                            }
-                            
-                            std::string destFile = getValidString("Введите название файла для сохранения шифра (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
-                        }
-                    }
-                } 
-                else if (action == 2) { 
-                    int mode = getValidChoice("1 - Вывод в консоль, 2 - Вывод в отдельный файл: ", 1, 2);
-                    
-                    std::vector<int64_t> cipher;
-                    std::string encFile;
-                    while (true) {
-                        encFile = getValidString("Введите имя зашифрованного файла (с расширением .bin): ");
-                        cipher = readCipherFromFile(encFile);
-                        if (!cipher.empty()) break;
-                        std::cout << "Попробуйте ввести имя файла заново.\n";
-                    }
-                    
-                    int64_t d = getValidNumber<int64_t>("Введите ваш закрытый ключ (d): ");
-                    int64_t n = getValidNumber<int64_t>("Введите ваш модуль (n): ");
-                    RSAKey privKey = {d, n};
-                    
-                    std::string decryptedText = rsaDecryptString(cipher, privKey);
-                    
-                    if (mode == 1) {
-                        std::cout << "\nРасшифрованный текст: " << decryptedText << "\n";
-                    } else {
-                        std::string destFile = getValidString("Введите имя текстового файла для сохранения расшифрованного текста: ");
-                        std::ofstream out(destFile);
-                        out << decryptedText;
-                        std::cout << "Текст успешно сохранен!\n";
-                    }
-                }
-                else if (action == 3) {
-                    emulateRSAMitM();
-                }
-                break;
-            }
             case MenuOption::DIOPHANTINE: {
                 solveDiophantine(237, 44, 1);
                 break;
