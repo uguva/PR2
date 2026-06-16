@@ -6,8 +6,6 @@
 
 #include "CryptoMath.h"
 #include "RSA.h"
-#include "CryptoMath.h"
-#include "RSA.h"
 #include "InputUtils.h"
 
 enum class MenuOption {
