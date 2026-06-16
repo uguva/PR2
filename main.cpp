@@ -3,20 +3,15 @@
 #include <fstream>
 #include <clocale>
 
-// библиотеки для кириллицы
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include "CryptoMath.h"
 #include "RSA.h"
 
 enum class MenuOption {
-    TASK_1_POW = 1,
-    TASK_2_EEA_MULT = 2,
-    TASK_3_EEA_INV = 3,
-    TASK_4_RSA_AND_MITM = 4,
-    TASK_6_DIOPHANTINE = 6,
+    POW = 1,
+    EEA_MULT = 2,
+    EEA_INV = 3,
+    RSA_AND_MITM = 4,
+    DIOPHANTINE = 6,
     EXIT = 0
 };
 
@@ -32,12 +27,8 @@ void printMenu() {
 }
 
 int main() {
-    setlocale(LC_ALL, "ru_RU.UTF-8");
-#ifdef _WIN32
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
-#endif
 
+    setlocale(LC_ALL, "ru_RU.UTF-8");
 
     int choice;
     while (true) {
@@ -48,7 +39,7 @@ int main() {
         if (option == MenuOption::EXIT) break;
 
         switch (option) {
-            case MenuOption::TASK_1_POW: {
+            case MenuOption::POW: {
                 int64_t a, x, p;
                 std::cout << "Введите основание (a), степень (x) и простой модуль (p): ";
                 std::cin >> a >> x >> p;
@@ -63,7 +54,7 @@ int main() {
                 break;
             }
 
-            case MenuOption::TASK_2_EEA_MULT: {
+            case MenuOption::EEA_MULT: {
                 int64_t c, m, x, y;
                 std::cout << "Введите c и m: ";
                 std::cin >> c >> m;
@@ -73,7 +64,7 @@ int main() {
                 break;
             }
 
-            case MenuOption::TASK_3_EEA_INV: {
+            case MenuOption::EEA_INV: {
                 int64_t C, m;
                 std::cout << "Введите C и m: ";
                 std::cin >> C >> m;
@@ -84,7 +75,8 @@ int main() {
                 break;
 }
 
-            case MenuOption::TASK_4_RSA_AND_MITM: {
+
+            case MenuOption::RSA_AND_MITM: {
                 int action;
                 std::cout << "1 - Шифрование, 2 - Дешифрование, 3 - Эмуляция атаки MitM: ";
                 std::cin >> action;
@@ -267,7 +259,7 @@ int main() {
                 }
                 break;
             }
-            case MenuOption::TASK_6_DIOPHANTINE: {
+            case MenuOption::DIOPHANTINE: {
                 solveDiophantine(237, 44, 1);
                 break;
             }
