@@ -117,7 +117,7 @@ int main() {
                         if (mode == 1) {
                             textToEncrypt = getValidString("Введите текст для шифрования: ");
                             std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, filename + ".txt", pubKeyToUse);
+                            rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
                         } 
                         else if (mode == 2) {
                             int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
@@ -143,7 +143,7 @@ int main() {
                             }
                             
                             std::string destFile = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, destFile + ".txt", pubKeyToUse);
+                            rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
                         }
                     } 
                     else if (keySource == 2) {
@@ -155,7 +155,7 @@ int main() {
                         if (mode == 1) {
                             textToEncrypt = getValidString("Введите текст для шифрования: ");
                             std::string filename = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, filename + ".txt", pubKeyToUse);
+                            rsaEncryptToFile(textToEncrypt, filename + ".bin", pubKeyToUse);
                         } 
                         else if (mode == 2) {
                             int fileAction = getValidChoice("1 - Открыть существующий файл, 2 - Создать новый: ", 1, 2);
@@ -181,7 +181,7 @@ int main() {
                             }
                             
                             std::string destFile = getValidString("Введите название файла для сохранения (без расширения): ");
-                            rsaEncryptToFile(textToEncrypt, destFile + ".txt", pubKeyToUse);
+                            rsaEncryptToFile(textToEncrypt, destFile + ".bin", pubKeyToUse);
                         }
                     }
                 } 
